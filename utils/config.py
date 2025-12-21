@@ -1,2 +1,10 @@
+import os
+from dotenv import load_dotenv
+
+# Pythonic load of .env variables
+load_dotenv()
+
 class Config:
-    TMDB_API_KEY = "5b57b67f5333464ade6be59a6cc883ca"
+    """ Any env variables that can be exposed globally. """
+    TMDB_API_KEY = os.getenv("TMDB_API_KEY")
+    
