@@ -1,10 +1,7 @@
 
-
-# stranger_bayes
-
 ## Project Aim
 
-The aim of this project is to build a Bayesian hierarchical model to predict TV episode ratings. The model uses episode metadata and ratings fetched from the TMDB API, allowing for uncertainty quantification and probabilistic predictions. This approach enables more robust analysis of TV show ratings, including credible intervals and season/episode effects.
+The aim of this project is to build a Bayesian hierarchical model to predict TV episode ratings. The model uses episode metadata and ratings fetched from the TMDB API, allowing for uncertainty quantification and probabilistic predictions. This approach enables more robust analysis of TV show ratings, including credible intervals and season/episode effects. **For theoretical decisions, please refer to docs/**
 
 
 
@@ -26,5 +23,5 @@ The aim of this project is to build a Bayesian hierarchical model to predict TV 
 	The output CSV will be saved in the `data/` folder.
 
 ### Notes
-- Ensure your TMDB API key is set in the config file as required by the script.
+- Ensure your TMDB API key is set in the .env as required by the script.
 - If you encounter SSL errors, the script disables certificate verification for API requests (for debugging purposes).
