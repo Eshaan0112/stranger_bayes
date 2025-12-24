@@ -17,11 +17,8 @@ class SeasonHierarchicalModel:
         self.df = df.copy()
         self.rating_col = rating_col
         self.n_col = n_col
-
-        # Clean missing values in observed ratings: set to 1 if missing or 0
-        self.df[self.rating_col] = self.df[self.rating_col].fillna(1)
-        # Ensure no zero or negative vote counts for model stability
         self.df[self.n_col] = self.df[self.n_col].clip(lower=1)
+        
 
         self.season_col = season_col
         self.lower = lower
@@ -135,30 +132,7 @@ class SeasonHierarchicalModel:
                 })
             return theta_samples, summaries
 
-    def add_episode(self, season, episode_number, **kwargs):
-        """
-        Add a new episode (an unaired or unrated episode) to the DataFrame for inference.
-
-        Parameters:
-        - season: The season number for the new episode.
-        - episode_number: The episode number (or any unique identifier).
-        - kwargs: Additional columns/values (vote_average, vote_count). If not provided, vote_average will be set to NaN and vote_count to 1.
-
-        The new episode will be included in the next model fit and can be used for inference.
-        """
-        new_row = {self.season_col: season, 'episode_number': episode_number}
-        # Set default values for required columns if not provided
-        new_row[self.rating_col] = kwargs.get(self.rating_col, np.nan)
-        new_row[self.n_col] = kwargs.get(self.n_col, 1)
-        # Add any other columns provided
-        for k, v in kwargs.items():
-            if k not in new_row:
-                new_row[k] = v
-        self.df = pd.concat([self.df, pd.DataFrame([new_row])], ignore_index=True)
-        # Update season indices
-        self.seasons = self.df[self.season_col].unique()
-        self.season_idx = pd.Categorical(self.df[self.season_col], categories=self.seasons).codes
-
+        
     def plot_trace(self, episode_idx=None, season=None, episode_number=None):
         """
         Generate a trace plot for the MCMC samples for a specific episode's latent quality (theta).

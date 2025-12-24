@@ -14,8 +14,9 @@ def root():
 # Load and train the model once at startup
 def load_and_train_model(draws=1000, tune=500):
     df = fetch_all_episodes("Stranger Things")
+    # Clean unreleased episodes: set vote_average to NaN where vote_count == 0
+    df.loc[df['vote_count'] == 0, 'vote_average'] = float('nan')
     model = SeasonHierarchicalModel(df)
-    model.fit(draws=draws, tune=tune)
     return model
 
 model = load_and_train_model()  # Pretrained model stored in memory
@@ -51,10 +52,8 @@ def predict_quality(season: int = Query(None, description="Season number"), epis
         return JSONResponse(status_code=422, content={
             "detail": "Please provide both 'season' and 'episode_number' as query parameters, e.g. /predict_quality/?season=1&episode_number=2"
         })
-    mask = (model.df[model.season_col] == season) & (model.df['episode_number'] == episode_number)
-    if not mask.any():
-        model.add_episode(season=season, episode_number=episode_number)
-        model.fit(draws=1000, tune=500)  # Retrain only if new episode/season is added
+    model.fit(draws=1000, tune=500) 
+
     season_mask = (model.df[model.season_col] == season)
     season_indices = model.df[season_mask].index.tolist()
     idx = [i for i in season_indices if model.df.loc[i, 'episode_number'] == episode_number][0]
