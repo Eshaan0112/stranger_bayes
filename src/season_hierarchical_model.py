@@ -159,4 +159,34 @@ class SeasonHierarchicalModel:
         self.seasons = self.df[self.season_col].unique()
         self.season_idx = pd.Categorical(self.df[self.season_col], categories=self.seasons).codes
 
+    def plot_trace(self, episode_idx=None, season=None, episode_number=None):
+        """
+        Generate a trace plot for the MCMC samples for a specific episode's latent quality (theta).
+        Returns the plot as a PNG image in bytes.
+        If season and episode_number are provided, include them in the plot title.
+        """
+        import matplotlib.pyplot as plt
+        import io
+        if self.trace is None:
+            print("Model has not been fit yet.")
+            return None
+        if episode_idx is None:
+            episode_idx = 0  # Default to first episode
+        # Extract samples for the specific episode
+        theta_samples = self.trace.posterior['theta'].values[..., episode_idx].flatten()
+        fig, ax = plt.subplots(figsize=(8, 3))
+        ax.plot(theta_samples, alpha=0.7)
+        if season is not None and episode_number is not None:
+            ax.set_title(f"Trace Plot for Season {season}, Episode {episode_number} (DataFrame idx {episode_idx})")
+        else:
+            ax.set_title(f"Trace Plot for theta[{episode_idx}] (episode)")
+        ax.set_xlabel("Sample")
+        ax.set_ylabel("Latent Quality")
+        buf = io.BytesIO()
+        plt.tight_layout()
+        plt.savefig(buf, format='png')
+        plt.close(fig)
+        buf.seek(0)
+        return buf.read()
+
 

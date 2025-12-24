@@ -78,6 +78,5 @@ def main():
     df.to_csv(out_path, index=False)
     print(f"Saved episode data to {out_path}")
 
-
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

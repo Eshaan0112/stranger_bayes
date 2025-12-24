@@ -1,9 +1,11 @@
 import pandas as pd
-from season_hierarchical_model import SeasonHierarchicalModel
+from data_collection.fetch_tmdb_episodes import fetch_all_episodes
+from src.season_hierarchical_model import SeasonHierarchicalModel
 
 def main():
+    
     # Load TV show data
-    df = pd.read_csv('../data/stranger_things_episodes.csv')
+    df = fetch_all_episodes("Stranger Things")
 
     # Initialize the model
     model = SeasonHierarchicalModel(df)
