@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 .env
 .vscode/
+Miniconda3-latest-Linux-x86_64.sh
