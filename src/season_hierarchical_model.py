@@ -17,11 +17,8 @@ class SeasonHierarchicalModel:
         self.df = df.copy()
         self.rating_col = rating_col
         self.n_col = n_col
-
-        # Clean missing values in observed ratings: set to 1 if missing or 0
-        self.df[self.rating_col] = self.df[self.rating_col].fillna(1)
-        # Ensure no zero or negative vote counts for model stability
         self.df[self.n_col] = self.df[self.n_col].clip(lower=1)
+        
 
         self.season_col = season_col
         self.lower = lower
@@ -135,28 +132,35 @@ class SeasonHierarchicalModel:
                 })
             return theta_samples, summaries
 
-    def add_episode(self, season, episode_number, **kwargs):
+        
+    def plot_trace(self, episode_idx=None, season=None, episode_number=None):
         """
-        Add a new episode (an unaired or unrated episode) to the DataFrame for inference.
-
-        Parameters:
-        - season: The season number for the new episode.
-        - episode_number: The episode number (or any unique identifier).
-        - kwargs: Additional columns/values (vote_average, vote_count). If not provided, vote_average will be set to NaN and vote_count to 1.
-
-        The new episode will be included in the next model fit and can be used for inference.
+        Generate a trace plot for the MCMC samples for a specific episode's latent quality (theta).
+        Returns the plot as a PNG image in bytes.
+        If season and episode_number are provided, include them in the plot title.
         """
-        new_row = {self.season_col: season, 'episode_number': episode_number}
-        # Set default values for required columns if not provided
-        new_row[self.rating_col] = kwargs.get(self.rating_col, np.nan)
-        new_row[self.n_col] = kwargs.get(self.n_col, 1)
-        # Add any other columns provided
-        for k, v in kwargs.items():
-            if k not in new_row:
-                new_row[k] = v
-        self.df = pd.concat([self.df, pd.DataFrame([new_row])], ignore_index=True)
-        # Update season indices
-        self.seasons = self.df[self.season_col].unique()
-        self.season_idx = pd.Categorical(self.df[self.season_col], categories=self.seasons).codes
+        import matplotlib.pyplot as plt
+        import io
+        if self.trace is None:
+            print("Model has not been fit yet.")
+            return None
+        if episode_idx is None:
+            episode_idx = 0  # Default to first episode
+        # Extract samples for the specific episode
+        theta_samples = self.trace.posterior['theta'].values[..., episode_idx].flatten()
+        fig, ax = plt.subplots(figsize=(8, 3))
+        ax.plot(theta_samples, alpha=0.7)
+        if season is not None and episode_number is not None:
+            ax.set_title(f"Trace Plot for Season {season}, Episode {episode_number} (DataFrame idx {episode_idx})")
+        else:
+            ax.set_title(f"Trace Plot for theta[{episode_idx}] (episode)")
+        ax.set_xlabel("Sample")
+        ax.set_ylabel("Latent Quality")
+        buf = io.BytesIO()
+        plt.tight_layout()
+        plt.savefig(buf, format='png')
+        plt.close(fig)
+        buf.seek(0)
+        return buf.read()
 
 
